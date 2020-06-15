@@ -85,7 +85,7 @@ import _thread as thread
 import socket, select
 try:
     from tools import _filter_
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     pass
 
 __version__ = "0.1.0 Draft 1"
