@@ -84,7 +84,7 @@ Qual a diferença entre um proxy Elite, Anónimo e Transparente?
 import _thread as thread
 import socket, select
 try:
-    from tools import _filter_
+    from tools import filter_
 except (ModuleNotFoundError, ImportError):
     pass
 
@@ -100,7 +100,7 @@ class ConnectionHandler:
         self.timeout = timeout
         self.method, self.path, self.protocol = self.get_base_header()
         try:
-            self.path = _filter_(self.path)
+            self.path = filter_(self.path)
         except NameError:
             pass
         if not self.path:
