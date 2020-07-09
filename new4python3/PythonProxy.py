@@ -125,7 +125,7 @@ class ConnectionHandler:
             end = self.client_buffer.find("\n")
             if end != -1:
                 break
-        print("%s" % self.client_buffer[:end])
+        print(self.client_buffer[:end])
         data = (self.client_buffer[:end+1]).split()
         self.client_buffer = self.client_buffer[end+1:]
         return data
@@ -145,7 +145,7 @@ class ConnectionHandler:
         self._connect_target(host)
         self.target.send(("%s %s %s\n" % (self.method, path, self.protocol) +
                          self.client_buffer).encode())
-        self.client_buffer = ''
+        self.client_buffer = ""
         self._read_write()
 
     def _connect_target(self, host):
