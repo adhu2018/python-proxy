@@ -83,10 +83,6 @@ Qual a diferença entre um proxy Elite, Anónimo e Transparente?
 
 import _thread as thread
 import socket, select
-import sys
-v = eval("{}.{}".format(sys.version_info[0],sys.version_info[1]))
-if v < 3.6:
-    ModuleNotFoundError = ImportError
 try:
     from tools import filter_
 except ImportError:
@@ -96,7 +92,7 @@ except ModuleNotFoundError:
 
 __version__ = "0.1.0 Draft 1"
 BUFLEN = 8192
-VERSION = "Python Proxy/"+__version__
+VERSION = "Python Proxy/" + __version__
 HTTPVER = "HTTP/1.1"
 
 class ConnectionHandler:
