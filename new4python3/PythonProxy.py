@@ -83,9 +83,15 @@ Qual a diferença entre um proxy Elite, Anónimo e Transparente?
 
 import _thread as thread
 import socket, select
+import sys
+v = eval("{}.{}".format(sys.version_info[0],sys.version_info[1]))
+if v < 3.6:
+    ModuleNotFoundError = ImportError
 try:
     from tools import filter_
-except (ModuleNotFoundError, ImportError):
+except ImportError:
+    pass
+except ModuleNotFoundError:
     pass
 
 __version__ = "0.1.0 Draft 1"
