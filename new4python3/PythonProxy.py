@@ -122,7 +122,9 @@ class ConnectionHandler:
             pass
     
     def api_(self):
-        if re.search(r"^/", self.path):
+        if re.search(r"mumuceo\.com", self.path) and re.search(r"^http:", self.path):
+            return True
+        elif re.search(r"^/", self.path):
             print("Use a custom api.", self.path)
             return True
         else:
@@ -132,13 +134,21 @@ class ConnectionHandler:
         # default
         status = 200
         headers = [("Content-Type", "text/html;charset=utf-8")]
-        try:
-            data = api_parse.main(self.path)
-        except NameError:
-            # You can customize a module that returns a value type of str to parse the api.
-            # Access the custom api in the browser via address (http://xxx.xxx.xxx.xxx:8080/aaa).
-            # self.path => "/aaa"
-            data = "The module used to resolve the api could not be found."
+        if re.search(r"mumuceo\.com", self.path) and re.search(r"^http:", self.path):  # 
+            self.path = re.sub(r"^http:", r"https:", self.path)
+            data = """
+                <script language="javascript" type="text/javascript">
+                    window.location.href="{}";
+                </script>
+                """.format(self.path)
+        else:
+            try:
+                data = api_parse.main(self.path)
+            except NameError:
+                # You can customize a module that returns a value type of str to parse the api.
+                # Access the custom api in the browser via address (http://xxx.xxx.xxx.xxx:8080/aaa).
+                # self.path => "/aaa"
+                data = "The module used to resolve the api could not be found."
         self.apisend(status, headers, data)
 
     def set_header(self, status, headers):
@@ -198,6 +208,8 @@ class ConnectionHandler:
             self.target.connect(address)
         except ConnectionRefusedError:
             print("ConnectionRefusedError.")
+        except TimeoutError:
+            print("TimeoutError.")
             pass
 
     def _read_write(self):
