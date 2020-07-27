@@ -82,15 +82,16 @@ Qual a diferença entre um proxy Elite, Anónimo e Transparente?
 """
 
 import _thread as thread
+import re
 import socket, select
 try:
-    from tools import filter_
+    from tools import filter_, api_parse
 except ImportError:
     pass
 except ModuleNotFoundError:
     pass
 
-__version__ = "0.1.0 Draft 1"
+__version__ = "0.1.1"
 BUFLEN = 8192
 VERSION = "Python Proxy/" + __version__
 HTTPVER = "HTTP/1.1"
@@ -107,13 +108,52 @@ class ConnectionHandler:
             pass
         if not self.path:
             return
-        if self.method == "CONNECT":
+        elif self.api_():
+            self.api()
+        elif self.method=="CONNECT":
             self.method_CONNECT()
         elif self.method in ("OPTIONS", "GET", "HEAD", "POST", "PUT",
                              "DELETE", "TRACE"):
             self.method_others()
         self.client.close()
-        self.target.close()
+        try:
+            self.target.close()
+        except AttributeError:
+            pass
+    
+    def api_(self):
+        if re.search(r"^/", self.path):
+            print("Use a custom api.", self.path)
+            return True
+        else:
+            return False
+    
+    def api(self):
+        # default
+        status = 200
+        headers = [("Content-Type", "text/html;charset=utf-8")]
+        try:
+            data = api_parse.main(self.path)
+        except NameError:
+			# You can customize a module that returns a value type of str to parse the api.
+			# Access the custom api in the browser via address (http://xxx.xxx.xxx.xxx:8080/aaa).
+			# self.path => "/aaa"
+		    data = "The module used to resolve the api could not be found."
+        self.apisend(status, headers, data)
+
+    def set_header(self, status, headers):
+	    # default
+        respond_header = "HTTP/1.1 {} \r\n".format(status)
+        for i in headers:
+            respond_header += "{}:{}\r\n".format(i[0], i[1])
+        respond_header += "\r\n"
+        return respond_header
+    
+    def apisend(self, status, headers, data):
+        respond_header = self.set_header(status, headers)
+        respond = respond_header + data
+        self.client.send(respond.encode())
+        self.client_buffer = ""
 
     def get_base_header(self):
         while 1:
@@ -131,7 +171,7 @@ class ConnectionHandler:
         self.client.send((HTTPVER + " 200 Connection established\n" +
                          "Proxy-agent: %s\n\n" % VERSION).encode())
         self.client_buffer = ""
-        self._read_write()        
+        self._read_write()
 
     def method_others(self):
         self.path = self.path[7:]
@@ -139,8 +179,9 @@ class ConnectionHandler:
         host = self.path[:i]        
         path = self.path[i:]
         self._connect_target(host)
-        self.target.send(("%s %s %s\n" % (self.method, path, self.protocol) +
-                         self.client_buffer).encode())
+        temp = "{} {} {}\n".format(self.method, path, self.protocol) + self.client_buffer
+        # print("\n"+temp)  # debug
+        self.target.send(temp.encode())
         self.client_buffer = ""
         self._read_write()
 
@@ -153,7 +194,11 @@ class ConnectionHandler:
             port = 80
         (soc_family, _, _, _, address) = socket.getaddrinfo(host, port)[0]
         self.target = socket.socket(soc_family)
-        self.target.connect(address)
+        try:
+            self.target.connect(address)
+        except ConnectionRefusedError:
+            print("ConnectionRefusedError.")
+            pass
 
     def _read_write(self):
         time_out_max = self.timeout / 3
@@ -185,7 +230,7 @@ def start_server(host="0.0.0.0", port=8080, IPv6=False, timeout=60,
         soc_type = socket.AF_INET
     soc = socket.socket(soc_type)
     soc.bind((host, port))
-    print("Serving on %s:%d." % (host, port))
+    print("Serving on {}:{}.".format(host, port))
     soc.listen(0)
     while 1:
         thread.start_new_thread(handler, soc.accept()+(timeout,))
