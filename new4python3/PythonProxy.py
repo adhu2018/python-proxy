@@ -135,14 +135,14 @@ class ConnectionHandler:
         try:
             data = api_parse.main(self.path)
         except NameError:
-			# You can customize a module that returns a value type of str to parse the api.
-			# Access the custom api in the browser via address (http://xxx.xxx.xxx.xxx:8080/aaa).
-			# self.path => "/aaa"
-		    data = "The module used to resolve the api could not be found."
+            # You can customize a module that returns a value type of str to parse the api.
+            # Access the custom api in the browser via address (http://xxx.xxx.xxx.xxx:8080/aaa).
+            # self.path => "/aaa"
+            data = "The module used to resolve the api could not be found."
         self.apisend(status, headers, data)
 
     def set_header(self, status, headers):
-	    # default
+        # default
         respond_header = "HTTP/1.1 {} \r\n".format(status)
         for i in headers:
             respond_header += "{}:{}\r\n".format(i[0], i[1])
