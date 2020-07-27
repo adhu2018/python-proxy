@@ -195,6 +195,7 @@ class ConnectionHandler:
         path = self.path[i:]
         self._connect_target(host)
         temp = "{} {} {}\n".format(self.method, path, self.protocol) + self.client_buffer
+        temp = re.sub(r"(Proxy\-)?Connection:\s*keep\-alive", r"Connection: close", temp)
         # print("\n"+temp)  # debug
         self.target.send(temp.encode())
         self.client_buffer = ""
