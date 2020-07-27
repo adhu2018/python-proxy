@@ -134,7 +134,12 @@ class ConnectionHandler:
         # default
         status = 200
         headers = [("Content-Type", "text/html;charset=utf-8")]
-        if re.search(r"mumuceo\.com", self.path) and re.search(r"^http:", self.path):  # 
+        """
+        When I visited this website, I found that I couldn't access it through the HTTP protocol.
+        At present, we can only access it through the HTTPS protocol.
+        The problem has not been solved in substance. It is only a temporary solution, not a fundamental one.
+        """
+        if re.search(r"mumuceo\.com", self.path) and re.search(r"^http:", self.path):
             self.path = re.sub(r"^http:", r"https:", self.path)
             data = """
                 <script language="javascript" type="text/javascript">
