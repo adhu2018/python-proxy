@@ -85,11 +85,10 @@ import _thread as thread
 import re
 import socket, select
 try:
-    from tools import filter_, api_parse
-except ImportError:
-    pass
-except ModuleNotFoundError:
-    pass
+    from tools import filter, api_parse
+except:
+    filter = None
+    api_parse = None
 
 __version__ = "0.1.1"
 BUFLEN = 8192
@@ -102,10 +101,9 @@ class ConnectionHandler:
         self.client_buffer = ""
         self.timeout = timeout
         self.method, self.path, self.protocol = self.get_base_header()
-        try:
-            self.path = filter_(self.path)
-        except NameError:
-            pass
+        if filter is not None:
+            # block sth.
+            self.path = filter(self.path)
         if not self.path:
             return
         elif self.api_():
@@ -122,9 +120,7 @@ class ConnectionHandler:
             pass
     
     def api_(self):
-        if re.search(r"mumuceo\.com", self.path) and re.search(r"^http:", self.path):
-            return True
-        elif re.search(r"^/", self.path):
+        if re.search(r"^/", self.path):
             print("Use a custom api.", self.path)
             return True
         else:
@@ -147,12 +143,11 @@ class ConnectionHandler:
                 </script>
                 """.format(self.path)
         else:
-            try:
-                data = api_parse.main(self.path)
-            except NameError:
+            if api_parse is not None:
                 # You can customize a module that returns a value type of str to parse the api.
                 # Access the custom api in the browser via address (http://xxx.xxx.xxx.xxx:8080/aaa).
                 # self.path => "/aaa"
+                data = api_parse.main(self.path)
                 data = "The module used to resolve the api could not be found."
         self.apisend(status, headers, data)
 
